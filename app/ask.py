@@ -21,14 +21,28 @@ from app.config import MODEL, api_error_message, get_api_key
 DEFAULT_QUESTION = "AIE2026の講座の宿題にある「3レベル」とは何ですか？"
 
 
+def token_counts(response) -> dict:
+    """response.usage_metadata からトークン数を取り出す。取れない値は None。"""
+    usage = response.usage_metadata
+    fields = {
+        "input": "prompt_token_count",
+        "output": "candidates_token_count",
+        "thoughts": "thoughts_token_count",
+        "total": "total_token_count",
+    }
+    return {k: getattr(usage, f, None) if usage else None for k, f in fields.items()}
+
+
 def ask(question: str) -> str:
     client = genai.Client(api_key=get_api_key())
     response = client.models.generate_content(model=MODEL, contents=question)
 
-    # TODO(第1回 演習): response.usage_metadata から
-    #   入力トークン数と出力トークン数を表示してみよう（Copilotに頼んでよい）
-
-    return response.text
+    t = token_counts(response)
+    tokens = (
+        f"[tokens] input={t['input']} output={t['output']}"
+        f" (thoughts={t['thoughts']}, total={t['total']})"
+    )
+    return f"{response.text}\n\n{tokens}"
 
 
 def main() -> None:
