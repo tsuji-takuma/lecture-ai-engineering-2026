@@ -1,0 +1,18 @@
+{"kind": "seen", "question": "「宿題の3レベル」とは何ですか？", "must_all": ["基礎", "実装", "発展"]}
+{"kind": "seen", "question": "「lecNN-start タグ」とは何ですか？", "must_all": ["タグ", "演習"]}
+{"kind": "seen", "question": "「既定モデル」とは何ですか？", "must_all": ["gemini-3.5-flash-lite"]}
+{"kind": "seen", "question": "「answer.md」とは何ですか？", "must_all": ["PR"]}
+{"kind": "seen", "question": "「Pi」とは何ですか？", "must_all": ["コーディングエージェント"]}
+{"kind": "seen", "question": "「LoRA」とは何ですか？", "must_all": ["低ランク"]}
+{"kind": "paraphrase", "question": "AIE2026の宿題はいくつのレベルに分かれていて、それぞれ何ですか？", "must_all": ["基礎", "実装", "発展"]}
+{"kind": "paraphrase", "question": "前の回の演習が終わっていなくても、次の回の演習を始めるにはどうすればよいですか？", "must_all": ["タグ"]}
+{"kind": "paraphrase", "question": "この講座の演習で標準に使うLLMは何ですか？", "must_all": ["gemini-3.5-flash-lite"]}
+{"kind": "paraphrase", "question": "演習や宿題の結果は、どのファイルに書いて提出しますか？", "must_all": ["answer.md"]}
+{"kind": "paraphrase", "question": "Low-Rank Adaptation の仕組みを教えてください。", "must_all": ["低ランク"]}
+{"kind": "paraphrase", "question": "複数のMCPサーバーに同じ名前のツールがあるとき、どうやって区別しますか？", "must_all": ["サーバー名"]}
+{"kind": "unknown_fake", "question": "「lecNN-end タグ」とは何ですか？", "must_any": ["分かりません", "わかりません", "記載がありません", "見つかりません", "存在しません", "知りません", "不明", "確認が必要", "情報がありません"]}
+{"kind": "unknown_fake", "question": "AIE2026の宿題の「応用」レベルとは何ですか？", "must_any": ["分かりません", "わかりません", "記載がありません", "見つかりません", "存在しません", "知りません", "不明", "確認が必要", "情報がありません"]}
+{"kind": "unknown_fake", "question": "AIE2026の「週次振り返りシート」とは何ですか？", "must_any": ["分かりません", "わかりません", "記載がありません", "見つかりません", "存在しません", "知りません", "不明", "確認が必要", "情報がありません"]}
+{"kind": "unknown_general", "question": "「RLHF」とは何ですか？", "must_any": ["強化学習", "reinforcement"]}
+{"kind": "unknown_general", "question": "「RAG」とは何ですか？", "must_any": ["検索", "retrieval"]}
+{"kind": "unknown_general", "question": "「知識蒸留」とは何ですか？", "must_any": ["教師", "生徒", "小さなモデル", "teacher"]}
