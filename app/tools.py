@@ -5,10 +5,14 @@
 """
 
 import json
+import random
+import re
+from datetime import datetime
 from functools import cache
 from pathlib import Path
 
 DATA_DIR = Path(__file__).resolve().parent.parent / "data"
+LOG_DIR = Path(__file__).resolve().parent.parent / "learning_log"
 MAX_RESULTS = 3
 
 
@@ -77,3 +81,46 @@ def get_lecture_summary(lecture: int) -> str:
         available = sorted(p.stem for p in (DATA_DIR / "lectures").glob("*.md"))
         return f"第{lecture}回の要点はまだありません。用意されている回: {', '.join(available)}"
     return path.read_text(encoding="utf-8")
+
+
+def make_quiz(lecture: int) -> str:
+    """指定した回（1始まりの整数）の用語から確認問題を1問作り、問題と答えを返す。
+
+    「第2回の確認問題を出して」「第3回の内容でクイズを出して」のように、
+    確認問題・クイズ・小テストを求められたときに使う。
+    返り値の question を利用者に出題し、answer は利用者が答えるまで見せない。
+    """
+    terms = [e for e in load_glossary() if e["lecture"] == lecture]
+    if not terms:
+        available = sorted({e["lecture"] for e in load_glossary()})
+        return (
+            f"第{lecture}回の用語は用語集にないため、確認問題を作れません。"
+            f"問題を作れる回: {', '.join(f'第{n}回' for n in available)}"
+        )
+    entry = random.choice(terms)
+    return json.dumps(
+        {"question": f"「{entry['term']}」の意味は？", "answer": entry["definition"]},
+        ensure_ascii=False,
+    )
+
+
+def save_learning_log(title: str, content: str) -> str:
+    """学習の記録を、Markdown ファイルとして learning_log/ フォルダに保存する。
+
+    「今日学んだことを記録して」「この内容を学習ログに残して」のように、
+    学習の記録を保存するよう頼まれたときだけ使う。頼まれていないときは使わない。
+    title には記録の短い題名（例: "LoRAとQLoRAの違い"）、
+    content には保存する本文（学んだこと・疑問点など）を Markdown で入れる。
+    保存してよいかは、このツールを呼んだあとに仕組みの側で利用者に確認する。
+    そのため、呼ぶ前に会話の中で確認したり、内容を聞き返したりせず、すぐに呼んでよい。
+    """
+    title = title.strip()
+    if not title or not content.strip():
+        return "title と content の両方を指定してください。保存はしていません。"
+    # ファイル名に使えない文字や、フォルダの外を指す「/」「..」は「_」に置き換える
+    safe = re.sub(r'[\\/:*?"<>|\s.]+', "_", title)[:40].strip("_") or "log"
+    now = datetime.now()
+    LOG_DIR.mkdir(exist_ok=True)
+    path = LOG_DIR / f"{now:%Y%m%d-%H%M%S}-{safe}.md"
+    path.write_text(f"# {title}\n\n- 日時: {now:%Y-%m-%d %H:%M}\n\n{content.strip()}\n", encoding="utf-8")
+    return f"学習ログを保存しました: {path.relative_to(LOG_DIR.parent)}"

@@ -46,3 +46,28 @@ def test_default_question_of_lecture1_is_answerable_from_glossary():
     assert "3レベル" in DEFAULT_QUESTION
     hits = json.loads(tools.search_glossary("3レベル"))
     assert hits[0]["term"] == "宿題の3レベル"
+
+
+def test_make_quiz_returns_question_and_answer():
+    quiz = json.loads(tools.make_quiz(2))
+    terms = {t["term"]: t for t in tools.load_glossary() if t["lecture"] == 2}
+    term = quiz["question"].removeprefix("「").removesuffix("」の意味は？")
+    assert term in terms
+    assert quiz["answer"] == terms[term]["definition"]
+
+
+def test_make_quiz_reports_missing_lecture():
+    assert "作れません" in tools.make_quiz(0)
+
+
+def test_save_learning_log_writes_inside_log_dir(tmp_path, monkeypatch):
+    monkeypatch.setattr(tools, "LOG_DIR", tmp_path / "learning_log")
+    message = tools.save_learning_log("../LoRA/QLoRA の違い", "- LoRA は低ランク行列だけを学習する")
+    files = list((tmp_path / "learning_log").glob("*.md"))
+    assert len(files) == 1 and "保存しました" in message
+    assert "/" not in files[0].name.split("-", 2)[-1]  # 題名の「/」「..」でフォルダの外に出ない
+    assert "LoRA は低ランク行列" in files[0].read_text(encoding="utf-8")
+
+
+def test_save_learning_log_rejects_empty():
+    assert "保存はしていません" in tools.save_learning_log(" ", "本文")
