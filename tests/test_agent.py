@@ -40,3 +40,33 @@ def test_glossary_result_reaches_the_model():
         result = agent.run_sync("RAGとは？")
     returns = _parts(result, ToolReturnPart)
     assert returns and returns[0].tool_name == "search_glossary"
+
+
+def test_save_learning_log_waits_for_approval(tmp_path, monkeypatch):
+    """保存ツールは承認されるまで実行されず、承認後に初めてファイルができる。"""
+    from pydantic_ai import DeferredToolResults, ToolDenied
+
+    from app import tools
+
+    log_dir = tmp_path / "learning_log"
+    monkeypatch.setattr(tools, "LOG_DIR", log_dir)
+    model = TestModel(call_tools=["save_learning_log"])
+    with agent.override(model=model):
+        first = agent.run_sync("今日学んだことを記録して")
+        assert isinstance(first.output, DeferredToolRequests)
+        assert [c.tool_name for c in first.output.approvals] == ["save_learning_log"]
+        assert not log_dir.exists()  # 承認前は保存されない
+
+        call_id = first.output.approvals[0].tool_call_id
+        denied = agent.run_sync(
+            message_history=first.all_messages(),
+            deferred_tool_results=DeferredToolResults(approvals={call_id: ToolDenied("断る")}),
+        )
+        assert isinstance(denied.output, str) and not log_dir.exists()
+
+        approved = agent.run_sync(
+            message_history=first.all_messages(),
+            deferred_tool_results=DeferredToolResults(approvals={call_id: True}),
+        )
+    assert isinstance(approved.output, str)
+    assert len(list(log_dir.glob("*.md"))) == 1
